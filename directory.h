@@ -6,6 +6,10 @@
 #include <QDebug>
 #include <QLabel>
 #include <QMouseEvent>
+#include <QMenu>
+#include <QCursor>
+#include "rename.h"
+#include "fileinfowindow.h"
 
 class Directory : public QLabel, public Object
 {
@@ -15,11 +19,18 @@ public:
     Directory(const Directory& other);
     Directory& operator=(const Directory& other);
     virtual ~Directory();
+private slots:
+    void rename(QString name);
+    void remove();
+    void displayRenameWindow();
+    void displayFileInfoWindow();
 signals:
     void changed(std::string fileName);
+    void renameSignal(std::string oldName, std::string newName);
+    void deleteSignal(std::string name);
 protected:
-    virtual void mousePressEvent(QMouseEvent* event) override;
     virtual void mouseDoubleClickEvent(QMouseEvent* event) override;
+    virtual void contextMenuEvent(QContextMenuEvent *ev) override;
 };
 
 #endif // DIRECTORY_H

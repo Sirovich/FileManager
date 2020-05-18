@@ -16,22 +16,34 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    createdirectorywindow.cpp \
+    dialog.cpp \
     directory.cpp \
     file.cpp \
+    fileinfowindow.cpp \
     main.cpp \
     mainwindow.cpp \
     manager.cpp \
-    object.cpp
+    object.cpp \
+    rename.cpp
 
 HEADERS += \
+    createdirectorywindow.h \
+    dialog.h \
     directory.h \
     file.h \
+    fileinfowindow.h \
     mainwindow.h \
     manager.h \
-    object.h
+    object.h \
+    rename.h
 
 FORMS += \
-    mainwindow.ui
+    createdirectorywindow.ui \
+    dialog.ui \
+    fileinfowindow.ui \
+    mainwindow.ui \
+    rename.ui
 
 TRANSLATIONS += \
     FileManagaer_en_150.ts

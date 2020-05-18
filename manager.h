@@ -8,6 +8,10 @@
 #include <qdebug.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <createdirectorywindow.h>
 class Manager : public QObject
 {
     Q_OBJECT
@@ -19,21 +23,26 @@ private:
 public slots:
     void directoryChanged(std::string directoryName);
     void turnBack();
+    void executeFile(std::string fileName);
+    void renameFile(std::string oldName, std::string newName);
+    void deleteFile(std::string name);
 public:
     Manager(QObject* parent = nullptr);
     Manager(const Manager& other);
     Manager& operator=(const Manager& other);
-    ~Manager();
+    virtual ~Manager();
     void getAllObjects();
     std::string getCurrentDirectory();
     std::vector<File*> getFiles();
     std::vector<Directory*> getDirectories();
-    void moveToDirectory(std::string path);
-    void executeFile(std::string path);
     void sortFilesByType(std::vector<Object> systemFiles);
     void connectDirectories();
+    void connectFiles();
+    void createDirectory();
+    void createFolder(std::string name);
 signals:
     void changeUi();
+    void displayError(std::string errorMessage);
 };
 
 #endif // MANAGER_H

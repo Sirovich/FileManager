@@ -2,7 +2,7 @@
 #define OBJECT_H
 #include<string>
 #include<sys/stat.h>
-
+#include<QObject>
 class Object
 {
 private:
@@ -11,8 +11,11 @@ private:
 public:
     Object(std::string fileName, struct stat fileInfo);
     Object(const Object& other);
+    ~Object();
     struct stat getInfo();
     std::string getName();
+    void setName(std::string fileName);
 };
+
 
 #endif // OBJECT_H

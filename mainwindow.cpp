@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     manager = Manager();
+    dialogWindow = new Dialog(this);
     setUp();
     draw();
 }
@@ -16,11 +17,24 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::contextMenuEvent(QContextMenuEvent *event)
+{
+    QMenu* menu = new QMenu();
+    QAction* createAction = new QAction("Create directory", this);
+    connect(createAction, &QAction::triggered, this, &MainWindow::createDirectory);
+    menu->addAction(createAction);
+    menu->exec(QCursor::pos());
+}
+
+void MainWindow::createDirectory()
+{
+    manager.createDirectory();
+}
+
 void MainWindow::setUp()
 {
+    connect(&manager, &Manager::displayError, this, &MainWindow::displayError);
     connect(&manager, &Manager::changeUi, this, &MainWindow::changeDirectory);
-    resizeTimer.setSingleShot( true );
-    connect( &resizeTimer, SIGNAL(timeout()), SLOT(resizeDone()) );
     connect( ui->backButton, &QPushButton::released, &manager, &Manager::turnBack);
     manager.getAllObjects();
 }
@@ -28,23 +42,24 @@ void MainWindow::setUp()
 void MainWindow::draw()
 {
     clearUi(*ui->gridLayout);
-    int maxCount = MainWindow::width()/130;
-    ui->gridLayout->setSpacing(20);
-    ui->gridLayout->setAlignment(Qt::AlignTop | Qt::AlignCenter);
+    int maxCount = ui->scrollArea->width()/150;
     int i = 0;
     int j = 0;
     for(Directory* directory: manager.getDirectories())
     {
+        QWidget* widget = new QWidget();
         QVBoxLayout* layout = new QVBoxLayout();
         directory->setScaledContents(true);
         directory->setStyleSheet("border-image: url(DirectoryIcon.png);");
         directory->setFixedSize(50, 50);
-        layout->addWidget(directory, 0, Qt::AlignCenter);
+        layout->addWidget(directory, 0, Qt::AlignCenter | Qt::AlignBottom);
 
         QLabel* text = new QLabel(directory->getName().c_str());
-        layout->addWidget(text, 0, Qt::AlignCenter);
-
-        ui->gridLayout->addLayout(layout, i, j);
+        text->setAlignment(Qt::AlignCenter);
+        text->setWordWrap(true);
+        layout->addWidget(text, 0, Qt::AlignTop);
+        widget->setLayout(layout);
+        ((QGridLayout*)ui->scrollAreaWidgetContents->layout())->addWidget(widget, i, j);
         if (j > maxCount)
         {
             j = 0;
@@ -58,16 +73,20 @@ void MainWindow::draw()
 
     for(File* file: manager.getFiles())
     {
+        QWidget* widget = new QWidget();
         QVBoxLayout* layout = new QVBoxLayout();
         layout->setAlignment(Qt::AlignCenter);
         file->setScaledContents(true);
         file->setStyleSheet("border-image: url(FileIcon.png);");
         file->setFixedSize(50, 50);
-        layout->addWidget(file, 0, Qt::AlignCenter);
+        layout->addWidget(file, 0, Qt::AlignCenter | Qt::AlignBottom);
 
         QLabel* text = new QLabel(file->getName().c_str());
-        layout->addWidget(text, 0, Qt::AlignCenter);
-        ui->gridLayout->addLayout(layout, i, j);
+        text->setAlignment(Qt::AlignCenter);
+        text->setWordWrap(true);
+        layout->addWidget(text, 0, Qt::AlignTop | Qt::AlignCenter);
+        widget->setLayout(layout);
+        ((QGridLayout*)ui->scrollAreaWidgetContents->layout())->addWidget(widget, i, j);
         if (j > maxCount)
         {
             j = 0;
@@ -89,11 +108,14 @@ void MainWindow::clearUi(QLayout &qGrid)
         {
           delete pQWidget;
           delete pQLItem;
+          pQWidget = nullptr;
+          pQLItem = nullptr;
         }
         else if (QLayout *pQLayout = pQLItem->layout())
         {
           clearUi(*pQLayout);
           delete pQLayout;
+          pQLayout = nullptr;
         }
     }
 }
@@ -104,14 +126,8 @@ void MainWindow::changeDirectory()
     draw();
 }
 
-void MainWindow::resizeEvent( QResizeEvent *e )
+void MainWindow::displayError(std::string errorMessage)
 {
-  resizeTimer.start( 200 );
-  QMainWindow::resizeEvent(e);
-}
-
-void MainWindow::resizeDone()
-{
-    ui->verticalScrollBar->move(MainWindow::width() - 20, 20);
-    ui->gridLayoutWidget->setGeometry(QRect(QPoint(120, 20), QSize(MainWindow::width()- 149, MainWindow::height() - 99)));
+    dialogWindow->setText(errorMessage);
+    dialogWindow->show();
 }

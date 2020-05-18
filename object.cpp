@@ -12,6 +12,11 @@ Object::Object(const Object &other)
     this->fileName = other.fileName;
 }
 
+Object::~Object()
+{
+
+}
+
 struct stat Object::getInfo()
 {
     return this->fileInfo;
@@ -20,4 +25,9 @@ struct stat Object::getInfo()
 std::string Object::getName()
 {
     return this->fileName;
+}
+
+void Object::setName(std::string fileName)
+{
+    this->fileName = fileName;
 }
