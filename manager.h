@@ -21,15 +21,17 @@ private:
     std::vector<File*> files;
     std::vector<Directory*> directories;
     std::vector<Object*> copied;
+    bool isCuted = false;
 public slots:
     void directoryChanged(std::string directoryName);
     void turnBack();
     void executeFile(std::string fileName);
     void renameFile(std::string oldName, std::string newName);
-    void deleteFiles(std::string name);
+    void deleteFilesSlot(std::string fileName);
     void selecting(std::string name, short keyPressed);
     void insertFiles();
     void copySelected();
+    void cutFiles();
 public:
     Manager(QObject* parent = nullptr);
     Manager(const Manager& other);
@@ -48,10 +50,12 @@ signals:
     void changeUi();
     void displayError(std::string errorMessage);
 private:
+    std::string getLastName(std::string path);
     void insertFile(std::string source, std::string destination, long size);
     void insertDirectory(std::string source, std::string destination);
     int getType(struct stat info);
     void deleteDirectory(std::string path);
+    void deleteFiles(std::string fullPath);
 };
 
 #endif // MANAGER_H

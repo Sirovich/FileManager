@@ -22,13 +22,16 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     if (event->matches(QKeySequence::Copy))
     {
         manager.copySelected();
-        qDebug() << "copy sequence";
     }
 
     if (event->matches(QKeySequence::Paste))
     {
         manager.insertFiles();
-        qDebug() << "insert sequence";
+    }
+
+    if (event->matches(QKeySequence::Cut))
+    {
+        manager.cutFiles();
     }
 }
 
@@ -37,12 +40,16 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
     QMenu* menu = new QMenu();
     QAction* createAction = new QAction("Create directory", this);
     QAction* copyAction = new QAction("Copy selected", this);
+    QAction* cutAction = new QAction("Cut", this);
     QAction* insertAction = new QAction("Insert", this);
+
     connect(insertAction, &QAction::triggered, &manager, &Manager::insertFiles);
     connect(copyAction, &QAction::triggered, &manager, &Manager::copySelected);
+    connect(cutAction, &QAction::triggered, &manager, &Manager::cutFiles);
     connect(createAction, &QAction::triggered, this, &MainWindow::createDirectory);
     menu->addAction(createAction);
     menu->addAction(copyAction);
+    menu->addAction(cutAction);
     menu->addAction(insertAction);
     menu->exec(QCursor::pos());
 }
