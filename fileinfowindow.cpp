@@ -59,7 +59,12 @@ std::string FileInfoWindow::getTypeString(mode_t mode)
 std::string FileInfoWindow::getTimeString(struct timespec time)
 {
     char buff[100];
-    strftime(buff, sizeof(buff), "%D %T", gmtime(&time.tv_sec));
+    time_t now = std::time(NULL);
+    time_t local = std::mktime(std::localtime(&now));
+    time_t gmt = std::mktime(std::gmtime(&now));
+    long timeZone = static_cast<long> (local - gmt);
+    long seconds = time.tv_sec + timeZone;
+    strftime(buff, sizeof(buff), "%D %T", gmtime(&seconds));
     return buff;
 }
 

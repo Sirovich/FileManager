@@ -8,7 +8,7 @@
 #include <string>
 #include <iomanip>
 #include <sstream>
-
+#include <QDebug>
 namespace Ui {
 class FileInfoWindow;
 }

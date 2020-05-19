@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <createdirectorywindow.h>
+#include <sys/sendfile.h>
 class Manager : public QObject
 {
     Q_OBJECT
@@ -25,7 +26,7 @@ public slots:
     void turnBack();
     void executeFile(std::string fileName);
     void renameFile(std::string oldName, std::string newName);
-    void deleteFile(std::string name);
+    void deleteFiles(std::string name);
     void selecting(std::string name, short keyPressed);
     void insertFiles();
     void copySelected();
@@ -46,6 +47,11 @@ public:
 signals:
     void changeUi();
     void displayError(std::string errorMessage);
+private:
+    void insertFile(std::string source, std::string destination, long size);
+    void insertDirectory(std::string source, std::string destination);
+    int getType(struct stat info);
+    void deleteDirectory(std::string path);
 };
 
 #endif // MANAGER_H

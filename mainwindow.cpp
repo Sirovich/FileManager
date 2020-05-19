@@ -17,6 +17,21 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    if (event->matches(QKeySequence::Copy))
+    {
+        manager.copySelected();
+        qDebug() << "copy sequence";
+    }
+
+    if (event->matches(QKeySequence::Paste))
+    {
+        manager.insertFiles();
+        qDebug() << "insert sequence";
+    }
+}
+
 void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 {
     QMenu* menu = new QMenu();
@@ -59,7 +74,6 @@ void MainWindow::draw()
         QPixmap pix ("DirectoryIcon.png");
         directory->setScaledContents(true);
         directory->setPixmap(pix);
-        //directory->setStyleSheet("border-image: url(DirectoryIcon.png);");
         directory->setFixedSize(50, 50);
         layout->addWidget(directory, 0, Qt::AlignCenter | Qt::AlignBottom);
 
