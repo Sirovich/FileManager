@@ -23,6 +23,19 @@ File::~File()
 
 }
 
+void File::setSelected(bool state)
+{
+    Object::setSelected(state);
+    if (state == false)
+    {
+        this->setStyleSheet("background-color: none;");
+    }
+    else
+    {
+        this->setStyleSheet("background-color: yellow;");
+    }
+}
+
 void File::displayRenameWindow()
 {
     Rename* renameWindow = new Rename();
@@ -41,12 +54,18 @@ void File::mousePressEvent(QMouseEvent *ev)
 {
     if (ev->button() == Qt::LeftButton)
     {
-        QWidget* widget = this->parentWidget();
-        this->setStyleSheet("background-color: red;");
-        widget->setStyleSheet("border-width: 1px;");
-        widget->setStyleSheet("border-color: red;");
-        widget->setStyleSheet("border-style: solid;");
-        qDebug() << "123";
+        if (ev->modifiers().testFlag(Qt::ShiftModifier))
+        {
+            emit selecting(this->getName(), 2);
+        }
+        else if (ev->modifiers().testFlag(Qt::ControlModifier))
+        {
+            emit selecting(this->getName(), 1);
+        }
+        else
+        {
+            emit selecting(this->getName(), 0);
+        }
     }
 }
 

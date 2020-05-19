@@ -20,6 +20,19 @@ Directory::~Directory()
 
 }
 
+void Directory::setSelected(bool state)
+{
+    Object::setSelected(state);
+    if (state == false)
+    {
+        this->setStyleSheet("background-color: none;");
+    }
+    else
+    {
+        this->setStyleSheet("background-color: yellow;");
+    }
+}
+
 void Directory::mouseDoubleClickEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
@@ -40,6 +53,25 @@ void Directory::displayFileInfoWindow()
 {
     FileInfoWindow* fileInfoWindow = new FileInfoWindow(this);
     fileInfoWindow->show();
+}
+
+void Directory::mousePressEvent(QMouseEvent *ev)
+{
+    if (ev->button() == Qt::LeftButton)
+    {
+        if (ev->modifiers().testFlag(Qt::ShiftModifier))
+        {
+            emit selecting(this->getName(), 2);
+        }
+        else if (ev->modifiers().testFlag(Qt::ControlModifier))
+        {
+            emit selecting(this->getName(), 1);
+        }
+        else
+        {
+            emit selecting(this->getName(), 0);
+        }
+    }
 }
 
 void Directory::contextMenuEvent(QContextMenuEvent *ev)

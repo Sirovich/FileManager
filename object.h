@@ -8,6 +8,7 @@ class Object
 private:
     std::string fileName;
     struct stat fileInfo;
+    bool selected;
 public:
     Object(std::string fileName, struct stat fileInfo);
     Object(const Object& other);
@@ -15,6 +16,8 @@ public:
     struct stat getInfo();
     std::string getName();
     void setName(std::string fileName);
+    bool isSelected();
+    virtual void setSelected(bool state);
 };
 
 

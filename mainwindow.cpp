@@ -21,8 +21,14 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 {
     QMenu* menu = new QMenu();
     QAction* createAction = new QAction("Create directory", this);
+    QAction* copyAction = new QAction("Copy selected", this);
+    QAction* insertAction = new QAction("Insert", this);
+    connect(insertAction, &QAction::triggered, &manager, &Manager::insertFiles);
+    connect(copyAction, &QAction::triggered, &manager, &Manager::copySelected);
     connect(createAction, &QAction::triggered, this, &MainWindow::createDirectory);
     menu->addAction(createAction);
+    menu->addAction(copyAction);
+    menu->addAction(insertAction);
     menu->exec(QCursor::pos());
 }
 
@@ -50,7 +56,10 @@ void MainWindow::draw()
         QWidget* widget = new QWidget();
         QVBoxLayout* layout = new QVBoxLayout();
         directory->setScaledContents(true);
-        directory->setStyleSheet("border-image: url(DirectoryIcon.png);");
+        QPixmap pix ("DirectoryIcon.png");
+        directory->setScaledContents(true);
+        directory->setPixmap(pix);
+        //directory->setStyleSheet("border-image: url(DirectoryIcon.png);");
         directory->setFixedSize(50, 50);
         layout->addWidget(directory, 0, Qt::AlignCenter | Qt::AlignBottom);
 
@@ -76,8 +85,9 @@ void MainWindow::draw()
         QWidget* widget = new QWidget();
         QVBoxLayout* layout = new QVBoxLayout();
         layout->setAlignment(Qt::AlignCenter);
+        QPixmap pix ("FileIcon.png");
         file->setScaledContents(true);
-        file->setStyleSheet("border-image: url(FileIcon.png);");
+        file->setPixmap(pix);
         file->setFixedSize(50, 50);
         layout->addWidget(file, 0, Qt::AlignCenter | Qt::AlignBottom);
 

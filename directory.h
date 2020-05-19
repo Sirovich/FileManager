@@ -19,6 +19,7 @@ public:
     Directory(const Directory& other);
     Directory& operator=(const Directory& other);
     virtual ~Directory();
+    void setSelected(bool state) override;
 private slots:
     void rename(QString name);
     void remove();
@@ -28,7 +29,9 @@ signals:
     void changed(std::string fileName);
     void renameSignal(std::string oldName, std::string newName);
     void deleteSignal(std::string name);
+    void selecting(std::string name, short key);
 protected:
+    virtual void mousePressEvent(QMouseEvent *ev) override;
     virtual void mouseDoubleClickEvent(QMouseEvent* event) override;
     virtual void contextMenuEvent(QContextMenuEvent *ev) override;
 };

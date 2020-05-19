@@ -19,10 +19,12 @@ public:
     File(const File &other);
     File& operator=(const File &other);
     virtual ~File();
+    void setSelected(bool state) override;
 signals:
     void execute(std::string name);
     void deleteSignal(std::string name);
     void renameSignal(std::string oldName, std::string newName);
+    void selecting(std::string name, short key);
 private slots:
     void rename(QString name);
     void remove();

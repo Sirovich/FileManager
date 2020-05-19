@@ -19,13 +19,16 @@ private:
     std::string currentDirectory;
     std::vector<File*> files;
     std::vector<Directory*> directories;
-
+    std::vector<Object*> copied;
 public slots:
     void directoryChanged(std::string directoryName);
     void turnBack();
     void executeFile(std::string fileName);
     void renameFile(std::string oldName, std::string newName);
     void deleteFile(std::string name);
+    void selecting(std::string name, short keyPressed);
+    void insertFiles();
+    void copySelected();
 public:
     Manager(QObject* parent = nullptr);
     Manager(const Manager& other);

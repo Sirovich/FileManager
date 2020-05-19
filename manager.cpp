@@ -70,9 +70,7 @@ Manager &Manager::operator=(const Manager &other)
 
 Manager::~Manager()
 {
-    this->files.~vector();
-    this->directories.~vector();
-    this->currentDirectory.~basic_string();
+
 }
 
 std::string Manager::getCurrentDirectory()
@@ -120,6 +118,120 @@ void Manager::deleteFile(std::string name)
     emit changeUi();
 }
 
+void Manager::selecting(std::string name, short keyPressed)
+{
+    if (keyPressed == 0 || keyPressed == 1)
+    {
+        for(Directory* directory: directories)
+        {
+            if (directory->getName() == name)
+            {
+                directory->setSelected(true);
+            }
+            else if (directory->isSelected())
+            {
+                if (keyPressed == 0)  // ctrl not pressed
+                {
+                    directory->setSelected(false);
+                }
+            }
+        }
+
+        for(File* file: files)
+        {
+            if (file->getName() == name)
+            {
+                file->setSelected(true);
+            }
+            else if (file->isSelected())
+            {
+                if (keyPressed == 0)  // ctrl not pressed
+                {
+                    file->setSelected(false);
+                }
+            }
+        }
+    }
+    else if (keyPressed == 2)
+    {
+        bool isFind = false;
+        int firstSelected = -1;
+        std::vector<Object*> objects = std::vector<Object*>();
+        for (Directory* directory: directories)
+        {
+            objects.push_back(directory);
+        }
+        for (File* file: files)
+        {
+            objects.push_back(file);
+        }
+
+        for(int i = 0; i < objects.size(); i++)
+        {
+            if (objects[i]->getName() == name)
+            {
+                isFind = true;
+                objects[i]->setSelected(true);
+                if (firstSelected == -1)
+                {
+                    firstSelected = i;
+                    continue;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (objects[i]->isSelected())
+            {
+                if (isFind && firstSelected != -1)
+                {
+                    break;
+                }
+                else if (firstSelected == -1)
+                {
+                    firstSelected = i;
+                }
+            }
+
+            if (firstSelected != -1)
+            {
+                objects[i]->setSelected(true);
+            }
+        }
+    }
+}
+
+void Manager::insertFiles()
+{
+    for(Object* file: copied)
+    {
+
+    }
+}
+
+void Manager::copySelected()
+{
+    for(Directory* directory: directories)
+    {
+        if (directory->isSelected())
+        {
+            Object* fileInfo = new Object(currentDirectory+directory->getName(), directory->getInfo());
+            copied.push_back(fileInfo);
+        }
+    }
+
+    for(File* file: files)
+    {
+        if (file->isSelected())
+        {
+            Object* fileInfo = new Object(currentDirectory+file->getName(), file->getInfo());
+            copied.push_back(fileInfo);
+        }
+    }
+}
+
 void Manager::sortFilesByType(std::vector<Object> systemFiles)
 {
     for(int i = 0; i < systemFiles.size(); i++)
@@ -141,6 +253,7 @@ void Manager::connectDirectories()
 {
     for(Directory* directory: this->directories)
     {
+        connect(directory, &Directory::selecting, this, &Manager::selecting);
         connect(directory, &Directory::deleteSignal, this, &Manager::deleteFile);
         connect(directory, &Directory::renameSignal, this, &Manager::renameFile);
         connect(directory, &Directory::changed, this, &Manager::directoryChanged);
@@ -151,6 +264,7 @@ void Manager::connectFiles()
 {
     for(File* file: this->files)
     {
+        connect(file, &File::selecting, this, &Manager::selecting);
         connect(file, &File::deleteSignal, this, &Manager::deleteFile);
         connect(file, &File::renameSignal, this, &Manager::renameFile);
         connect(file, &File::execute, this, &Manager::executeFile);
