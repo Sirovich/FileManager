@@ -31,5 +31,8 @@ private:
 private slots:
     void changeDirectory();
     void displayError(std::string errorMessage);
+    void on_downloadsButton_clicked();
+    void on_desktopButton_clicked();
+    void on_homeButton_clicked();
 };
 #endif // MAINWINDOW_H

@@ -56,7 +56,7 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 
 void MainWindow::createDirectory()
 {
-    manager.createDirectory();
+    manager.showCreateDirectoryWindow();
 }
 
 void MainWindow::setUp()
@@ -73,17 +73,22 @@ void MainWindow::draw()
     int maxCount = ui->scrollArea->width()/150;
     int i = 0;
     int j = 0;
+    std::string displayedPath;
+    if (manager.getCurrentDirectory().size() > MainWindow::width()/10)
+    {
+        displayedPath = manager.getCurrentDirectory().substr(0, MainWindow::width()/10) + "...";
+    }
+    else
+    {
+        displayedPath = manager.getCurrentDirectory();
+    }
+
+    ui->path->setText(displayedPath.c_str());
     for(Directory* directory: manager.getDirectories())
     {
         QWidget* widget = new QWidget();
         QVBoxLayout* layout = new QVBoxLayout();
-        directory->setScaledContents(true);
-        QPixmap pix ("DirectoryIcon.png");
-        directory->setScaledContents(true);
-        directory->setPixmap(pix);
-        directory->setFixedSize(50, 50);
         layout->addWidget(directory, 0, Qt::AlignCenter | Qt::AlignBottom);
-
         QLabel* text = new QLabel(directory->getName().c_str());
         text->setAlignment(Qt::AlignCenter);
         text->setWordWrap(true);
@@ -106,12 +111,7 @@ void MainWindow::draw()
         QWidget* widget = new QWidget();
         QVBoxLayout* layout = new QVBoxLayout();
         layout->setAlignment(Qt::AlignCenter);
-        QPixmap pix ("FileIcon.png");
-        file->setScaledContents(true);
-        file->setPixmap(pix);
-        file->setFixedSize(50, 50);
         layout->addWidget(file, 0, Qt::AlignCenter | Qt::AlignBottom);
-
         QLabel* text = new QLabel(file->getName().c_str());
         text->setAlignment(Qt::AlignCenter);
         text->setWordWrap(true);
@@ -161,4 +161,37 @@ void MainWindow::displayError(std::string errorMessage)
 {
     dialogWindow->setText(errorMessage);
     dialogWindow->show();
+}
+
+void MainWindow::on_downloadsButton_clicked()
+{
+    char username[256];
+    size_t size = 256;
+    getlogin_r(username, size);
+    std::string fullPath = "/home/";
+    fullPath += username;
+    fullPath += "/Downloads/";
+    manager.setDirectory(fullPath);
+}
+
+void MainWindow::on_desktopButton_clicked()
+{
+    char username[256];
+    size_t size = 256;
+    getlogin_r(username, size);
+    std::string fullPath = "/home/";
+    fullPath += username;
+    fullPath += "/Desktop/";
+    manager.setDirectory(fullPath);
+}
+
+void MainWindow::on_homeButton_clicked()
+{
+    char username[256];
+    size_t size = 256;
+    getlogin_r(username, size);
+    std::string fullPath = "/home/";
+    fullPath += username;
+    fullPath += "/";
+    manager.setDirectory(fullPath);
 }

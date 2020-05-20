@@ -100,6 +100,12 @@ std::vector<Directory*> Manager::getDirectories()
     return this->directories;
 }
 
+void Manager::setDirectory(std::string path)
+{
+    currentDirectory = path;
+    emit changeUi();
+}
+
 void Manager::executeFile(std::string path)
 {
     std::string filePath ="xdg-open " + this->currentDirectory + "'" + path + "'";
@@ -121,26 +127,33 @@ void Manager::renameFile(std::string oldName, std::string newName)
     emit changeUi();
 }
 
-void Manager::deleteFilesSlot(std::string fileName)
+void Manager::deleteSelectedFiles()
 {
-    deleteFiles(currentDirectory+fileName);
-}
-
-void Manager::deleteFiles(std::string fullPath)
-{
-    struct stat info;
-    stat(fullPath.c_str(), &info);
-    if (getType(info) == 2)
+    for(Object* file: files)
     {
-        deleteDirectory(fullPath+"/");
+        if (file->isSelected())
+        {
+            std::string fullPath = currentDirectory + file->getName();
+            if(std::remove(fullPath.c_str()) != 0)
+            {
+                qDebug() << "Error deleting file";
+                qDebug() << strerror(errno);
+            }
+        }
     }
-
-    if(std::remove(fullPath.c_str()) != 0)
+    for (Object* directory: directories)
     {
-        qDebug() << "Error deleting file";
-        qDebug() << strerror(errno);
+        if (directory->isSelected())
+        {
+            std::string fullPath = currentDirectory + directory->getName();
+            deleteDirectory(fullPath + "/");
+            if(std::remove(fullPath.c_str()) != 0)
+            {
+                qDebug() << "Error deleting file";
+                qDebug() << strerror(errno);
+            }
+        }
     }
-
     emit changeUi();
 }
 
@@ -234,6 +247,24 @@ void Manager::insertFiles()
     for(Object* file: copied)
     {
          std::string fileName = getLastName(file->getName());
+         std::string filePath = file->getName();
+         if (currentDirectory.size() >= filePath.size())
+         {
+            bool isDifferent = false;
+            for (int i = 0; i < filePath.size(); i++)
+            {
+                if (currentDirectory[i] != filePath[i])
+                {
+                    isDifferent = true;
+                    break;
+                }
+            }
+            if (!isDifferent)
+            {
+                qDebug() << "insert in sub directory";
+                return;
+            }
+         }
          int fileType = getType(file->getInfo());
          if (fileType == 1)
          {
@@ -243,15 +274,11 @@ void Manager::insertFiles()
          {
              insertDirectory(file->getName(), currentDirectory);
          }
-
-         if (isCuted)
-         {
-             deleteFiles(file->getName());
-         }
     }
 
     if (isCuted)
     {
+        deleteFiles(copied);
         copied.clear();
     }
 
@@ -264,28 +291,22 @@ void Manager::insertFile(std::string source, std::string destination, long size)
 
       if( (input=open(source.c_str(), O_RDONLY)) == -1 )
       {
-          qDebug() << "cannot open source file";
       }
 
 
       if( (output=creat(destination.c_str(), 0644)) == -1 )
       {
           close(input);
-          qDebug() << "cannot open destination file";
-          qDebug() << strerror(errno);
       }
 
       off_t bytesCopied = 0;
       int result = sendfile(output, input, &bytesCopied, size);
       if (result == -1)
       {
-          qDebug() << "not copied";
       }
 
       if( close(input) == -1 || close(output) == -1 )
       {
-          qDebug() << "close error";
-          qDebug() << strerror(errno);
       }
 }
 
@@ -293,14 +314,9 @@ void Manager::insertDirectory(std::string source, std::string destination)
 {
     DIR *dir_ptr = NULL;
     struct dirent *direntp;
-    qDebug() << (destination + getLastName(source)).c_str();
     destination += getLastName(source) + "/";
     mkdir(destination.c_str(), 0777);
-    if( (dir_ptr = opendir(source.c_str())) == NULL )
-    {
-        qDebug() << source.c_str();
-    }
-    else
+    if( (dir_ptr = opendir(source.c_str())) != NULL )
     {
         source += "/";
         while((direntp = readdir(dir_ptr)) != NULL)
@@ -316,7 +332,6 @@ void Manager::insertDirectory(std::string source, std::string destination)
                 }
                 else if (getType(fileinfo) == 2)
                 {
-
                     insertDirectory(source + direntp->d_name, destination + direntp->d_name);
                 }
             }
@@ -365,8 +380,6 @@ void Manager::deleteDirectory(std::string path)
 
                 if(std::remove((path + fileName).c_str()) != 0)
                 {
-                    qDebug() << "Error deleting file";
-                    qDebug() << strerror(errno);
                 }
             }
       }
@@ -426,7 +439,7 @@ void Manager::connectDirectories()
     for(Directory* directory: this->directories)
     {
         connect(directory, &Directory::selecting, this, &Manager::selecting);
-        connect(directory, &Directory::deleteSignal, this, &Manager::deleteFilesSlot);
+        connect(directory, &Directory::deleteSignal, this, &Manager::deleteSelectedFiles);
         connect(directory, &Directory::renameSignal, this, &Manager::renameFile);
         connect(directory, &Directory::changed, this, &Manager::directoryChanged);
     }
@@ -437,22 +450,60 @@ void Manager::connectFiles()
     for(File* file: this->files)
     {
         connect(file, &File::selecting, this, &Manager::selecting);
-        connect(file, &File::deleteSignal, this, &Manager::deleteFiles);
+        connect(file, &File::deleteSignal, this, &Manager::deleteSelectedFiles);
         connect(file, &File::renameSignal, this, &Manager::renameFile);
         connect(file, &File::execute, this, &Manager::executeFile);
     }
 }
 
-void Manager::createDirectory()
+void Manager::showCreateDirectoryWindow()
 {
     CreateDirectoryWindow* window = new CreateDirectoryWindow();
-    connect(window, &CreateDirectoryWindow::editingFinished, this, &Manager::createFolder);
+    connect(window, &CreateDirectoryWindow::editingFinished, this, &Manager::createDirectory);
     window->show();
 }
 
-void Manager::createFolder(std::string name)
+void Manager::createDirectory(std::string name)
 {
     mkdir((currentDirectory+name).c_str(), 0777);
+    emit changeUi();
+}
+
+std::string Manager::getParentPath(std::string path)
+{
+    if (path.size() > 1)
+    {
+        std::string parentPath;
+        for(int i = path.size() - 1; i > 0; i--)
+        {
+            if (path[i] == '/')
+            {
+                parentPath = path.substr(0, i + 1);
+                break;
+            }
+        }
+        return parentPath;
+    }
+    return "/";
+}
+
+void Manager::deleteFiles(std::vector<Object *> filesToDelete)
+{
+    for(Object* file: filesToDelete)
+    {
+        if (getType(file->getInfo()) == 2)
+        {
+            deleteDirectory(file->getName() + "/");
+        }
+
+        std::string fullPath = file->getName();
+        if(std::remove(fullPath.c_str()) != 0)
+        {
+            qDebug() << "Error deleting file";
+            qDebug() << strerror(errno);
+        }
+    }
+
     emit changeUi();
 }
 
@@ -466,13 +517,10 @@ std::string Manager::getLastName(std::string path)
             if (path[i] == '/')
             {
                 fileName = path.substr(i + 1, std::string::npos);
-                qDebug() << fileName.c_str();
                 break;
             }
         }
-
         return fileName;
     }
-
     return "/";
 }

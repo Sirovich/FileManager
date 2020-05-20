@@ -3,12 +3,13 @@
 
 #include <QDialog>
 #include <sys/types.h>
-#include "object.h"
+#include <sys/stat.h>
 #include <iostream>
 #include <string>
 #include <iomanip>
 #include <sstream>
 #include <QDebug>
+
 namespace Ui {
 class FileInfoWindow;
 }
@@ -18,7 +19,7 @@ class FileInfoWindow : public QDialog
     Q_OBJECT
 
 public:
-    explicit FileInfoWindow(Object* file, QWidget *parent = nullptr);
+     explicit FileInfoWindow(std::string name, struct stat fileInfo, QWidget *parent = nullptr);
     ~FileInfoWindow();
 private:
     std::string getFileSizeString(__off_t size);

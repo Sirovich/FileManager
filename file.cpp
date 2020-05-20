@@ -3,17 +3,15 @@
 #include <QDesktopServices>
 #include <QMouseEvent>
 
-File::File( std::string name, struct stat info, QWidget *parent) : QLabel(parent), Object(name, info)
+File::File( std::string name, struct stat info, QWidget *parent) : Object(name, info, parent)
 {
-
+    QPixmap pix ("FileIcon.png");
+    this->setScaledContents(true);
+    this->setPixmap(pix);
+    this->setFixedSize(50, 50);
 }
 
 File::File(const File &other) : Object(other)
-{
-
-}
-
-File &File::operator=(const File &other)
 {
 
 }
@@ -23,83 +21,10 @@ File::~File()
 
 }
 
-void File::setSelected(bool state)
-{
-    Object::setSelected(state);
-    if (state == false)
-    {
-        this->setStyleSheet("background-color: none;");
-    }
-    else
-    {
-        this->setStyleSheet("background-color: yellow;");
-    }
-}
-
-void File::displayRenameWindow()
-{
-    Rename* renameWindow = new Rename();
-    connect(renameWindow, &Rename::editingFinished, this, &File::rename);
-    renameWindow->setText(getName());
-    renameWindow->show();
-}
-
-void File::displayFileInfoWindow()
-{
-    FileInfoWindow* fileInfoWindow = new FileInfoWindow(this);
-    fileInfoWindow->show();
-}
-
-void File::mousePressEvent(QMouseEvent *ev)
-{
-    if (ev->button() == Qt::LeftButton)
-    {
-        if (ev->modifiers().testFlag(Qt::ShiftModifier))
-        {
-            emit selecting(this->getName(), 2);
-        }
-        else if (ev->modifiers().testFlag(Qt::ControlModifier))
-        {
-            emit selecting(this->getName(), 1);
-        }
-        else
-        {
-            emit selecting(this->getName(), 0);
-        }
-    }
-}
-
 void File::mouseDoubleClickEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
     {
         emit execute(this->getName());
     }
-}
-
-void File::contextMenuEvent(QContextMenuEvent *ev)
-{
-    QMenu* menu = new QMenu();
-    QAction* renameAction = new QAction("Rename", this);
-    QAction* removeAction = new QAction("Delete", this);
-    QAction* getInfoAction = new QAction("Information", this);
-    connect(renameAction, &QAction::triggered, this, &File::displayRenameWindow);
-    connect(removeAction, &QAction::triggered, this, &File::remove);
-    connect(getInfoAction, &QAction::triggered, this, &File::displayFileInfoWindow);
-    menu->addAction(renameAction);
-    menu->addAction(removeAction);
-    menu->addAction(getInfoAction);
-    menu->exec(QCursor::pos());
-}
-
-void File::rename(QString name)
-{
-    std::string oldName = getName();
-    this->setName(name.toStdString());
-    emit renameSignal(oldName, name.toStdString());
-}
-
-void File::remove()
-{
-    emit deleteSignal(getName());
 }

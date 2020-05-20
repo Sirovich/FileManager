@@ -1,13 +1,12 @@
 #include "fileinfowindow.h"
 #include "ui_fileinfowindow.h"
 
-FileInfoWindow::FileInfoWindow(Object* file, QWidget *parent) :
+FileInfoWindow::FileInfoWindow(std::string name, struct stat fileInfo, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::FileInfoWindow)
 {
     ui->setupUi(this);
-    ui->fileName->setText(file->getName().c_str());
-    struct stat fileInfo = file->getInfo();
+    ui->fileName->setText(name.c_str());
     ui->fileSize->setText(getFileSizeString(fileInfo.st_size).c_str());
     ui->fileType->setText(getTypeString(fileInfo.st_mode).c_str());
     ui->fileAccessTime->setText(getTimeString(fileInfo.st_atim).c_str());

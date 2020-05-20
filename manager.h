@@ -27,8 +27,8 @@ public slots:
     void turnBack();
     void executeFile(std::string fileName);
     void renameFile(std::string oldName, std::string newName);
-    void deleteFilesSlot(std::string fileName);
     void selecting(std::string name, short keyPressed);
+    void deleteSelectedFiles();
     void insertFiles();
     void copySelected();
     void cutFiles();
@@ -41,21 +41,23 @@ public:
     std::string getCurrentDirectory();
     std::vector<File*> getFiles();
     std::vector<Directory*> getDirectories();
+    void setDirectory(std::string path);
     void sortFilesByType(std::vector<Object> systemFiles);
     void connectDirectories();
     void connectFiles();
-    void createDirectory();
-    void createFolder(std::string name);
+    void showCreateDirectoryWindow();
+    void createDirectory(std::string name);
 signals:
     void changeUi();
     void displayError(std::string errorMessage);
 private:
+    std::string getParentPath(std::string path);
+    void deleteFiles(std::vector<Object*> filesToDelete);
     std::string getLastName(std::string path);
     void insertFile(std::string source, std::string destination, long size);
     void insertDirectory(std::string source, std::string destination);
     int getType(struct stat info);
     void deleteDirectory(std::string path);
-    void deleteFiles(std::string fullPath);
 };
 
 #endif // MANAGER_H
